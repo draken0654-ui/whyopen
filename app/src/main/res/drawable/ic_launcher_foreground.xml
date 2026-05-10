@@ -1,0 +1,14 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Circle background for the question mark -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,54m-35,0a35,35 0,1 1,70 0a35,35 0,1 1,-70 0" />
+    <!-- Question Mark -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M54,30c-7.73,0 -14,6.27 -14,14h4c0,-5.52 4.48,-10 10,-10s10,4.48 10,10c0,5 -4,6 -7,9c-3,3 -3,7 -3,7h4c0,0 0,-3 3,-6c3,-3 7,-5 7,-10c0,-7.73 -6.27,-14 -14,-14zM52,68h4v4h-4z" />
+</vector>
