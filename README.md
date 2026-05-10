@@ -22,7 +22,11 @@ WhyOpen utilizes several Android system features to provide a seamless experienc
 
 ## 📱 Screenshots
 
-*Coming Soon...*
+| Performance Insights | Mindfulness Challenge |
+|:---:|:---:|
+| <img src="screenshots/Performance_insights.jpeg" width="300"> | <img src="screenshots/unscramble_challenge.jpeg" width="300"> |
+| **Duration Selection** | **Weekly Activity** |
+| <img src="screenshots/timer_selection.jpeg" width="300"> | <img src="screenshots/Performance_insights_2.jpeg" width="300"> |
 
 ## 🏗️ Getting Started
 
