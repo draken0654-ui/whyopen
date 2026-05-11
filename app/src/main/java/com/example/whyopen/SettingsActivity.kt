@@ -113,9 +113,17 @@ class SettingsActivity : ComponentActivity() {
         val token = "1f9bf740-006b-4e5c-9bac-d52b05ce0d61"
         
         return try {
-            // Standard JSON format for Splunk
-            val jsonPayload = "{\"sourcetype\": \"whyopen\", \"event\": \"App Connection Test - SUCCESS\"}"
-            val body = jsonPayload.toRequestBody("application/json".toMediaType())
+            // We will send THREE events in one go to see which one sticks.
+            // 1. Plain event
+            // 2. Event with explicit index=main
+            // 3. Event with explicit sourcetype=whyopen
+            val payload = """
+                {"event": "TEST 1: PLAIN"}
+                {"index": "main", "event": "TEST 2: INDEX MAIN"}
+                {"sourcetype": "whyopen", "event": "TEST 3: SOURCETYPE WHYOPEN"}
+            """.trimIndent()
+            
+            val body = payload.toRequestBody("application/json".toMediaType())
             
             val request = Request.Builder()
                 .url(url)
@@ -127,7 +135,7 @@ class SettingsActivity : ComponentActivity() {
             client.newCall(request).execute().use { response ->
                 val responseBody = response.body?.string() ?: ""
                 if (response.isSuccessful) {
-                    "Success! Event received."
+                    "Sent 3 tests! Check Splunk for 'TEST 1', 'TEST 2', or 'TEST 3'."
                 } else {
                     "Failed ${response.code}: $responseBody"
                 }
