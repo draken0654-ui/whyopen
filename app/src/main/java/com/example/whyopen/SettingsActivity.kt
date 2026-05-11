@@ -108,7 +108,7 @@ class SettingsActivity : ComponentActivity() {
     private suspend fun testConnection(): String {
         // We need to use the same logic as the worker
         val client = createUnsafeOkHttpClient()
-        val url = "http://172.16.60.130:8088/services/collector/health"
+        val url = "https://172.16.60.130:8088/services/collector/health"
         
         return try {
             val request = Request.Builder().url(url).build()
