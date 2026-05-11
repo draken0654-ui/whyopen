@@ -8,15 +8,39 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
+import java.security.cert.X509Certificate
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 
 class LogUploadWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
 
-    // 1. Initialize the HTTP Client
-    private val client = OkHttpClient()
+    // 1. Initialize the HTTP Client with SSL Bypass for self-signed certificates
+    private val client = createUnsafeOkHttpClient()
+
+    private fun createUnsafeOkHttpClient(): OkHttpClient {
+        try {
+            val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
+                override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+                override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+                override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+            })
+
+            val sslContext = SSLContext.getInstance("SSL")
+            sslContext.init(null, trustAllCerts, java.security.SecureRandom())
+
+            return OkHttpClient.Builder()
+                .sslSocketFactory(sslContext.socketFactory, trustAllCerts[0] as X509TrustManager)
+                .hostnameVerifier { _, _ -> true }
+                .build()
+        } catch (e: Exception) {
+            throw RuntimeException(e)
+        }
+    }
 
     // 2. CONFIGURATION (Replace these with your actual Splunk info)
-    private val splunkUrl = "https://YOUR_SPLUNK_INSTANCE:8088/services/collector/event"
+    private val splunkUrl = "http://192.168.56.1:8088/services/collector/event"
     private val splunkToken = "1f9bf740-006b-4e5c-9bac-d52b05ce0d61"
 
     override suspend fun doWork(): Result {
