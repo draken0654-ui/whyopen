@@ -40,7 +40,7 @@ class LogUploadWorker(appContext: Context, workerParams: WorkerParameters) :
     }
 
     // 2. CONFIGURATION (Replace these with your actual Splunk info)
-    private val splunkUrl = "http://192.168.56.1:8088/services/collector/event"
+    private val splunkUrl = "http://172.16.60.130:8088/services/collector/event"
     private val splunkToken = "1f9bf740-006b-4e5c-9bac-d52b05ce0d61"
 
     override suspend fun doWork(): Result {
