@@ -1,6 +1,7 @@
 package com.example.whyopen
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -13,10 +14,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.whyopen.ui.theme.WhyopenTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
 
 class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,9 +71,74 @@ class SettingsActivity : ComponentActivity() {
                     SettingsSection("Account")
                     SettingsItem("Sync Progress", "Backup your focus data")
                     SettingsItem("Emergency Bypass", "Set a 4-digit PIN for bypass")
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    SettingsSection("Diagnostics")
+                    SplunkTestButton()
                     Spacer(modifier = Modifier.height(48.dp))
                 }
             }
+        }
+    }
+
+    @Composable
+    fun SplunkTestButton() {
+        val context = LocalContext.current
+        var testing by remember { mutableStateOf(false) }
+        
+        Button(
+            onClick = {
+                testing = true
+                CoroutineScope(Dispatchers.IO).launch {
+                    val result = testConnection()
+                    withContext(Dispatchers.Main) {
+                        testing = false
+                        Toast.makeText(context, result, Toast.LENGTH_LONG).show()
+                    }
+                }
+            },
+            enabled = !testing,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.8f))
+        ) {
+            Text(if (testing) "Testing Connection..." else "Test Splunk Connection", color = Color.White)
+        }
+    }
+
+    private suspend fun testConnection(): String {
+        // We need to use the same logic as the worker
+        val client = createUnsafeOkHttpClient()
+        val url = "http://172.16.60.130:8088/services/collector/health"
+        
+        return try {
+            val request = Request.Builder().url(url).build()
+            client.newCall(request).execute().use { response ->
+                if (response.isSuccessful) {
+                    "Success! Splunk is reachable."
+                } else {
+                    "Failed: Server returned ${response.code}"
+                }
+            }
+        } catch (e: Exception) {
+            "Error: ${e.message}"
+        }
+    }
+
+    private fun createUnsafeOkHttpClient(): OkHttpClient {
+        try {
+            val trustAllCerts = arrayOf<javax.net.ssl.TrustManager>(object : javax.net.ssl.X509TrustManager {
+                override fun checkClientTrusted(chain: Array<out java.security.cert.X509Certificate>?, authType: String?) {}
+                override fun checkServerTrusted(chain: Array<out java.security.cert.X509Certificate>?, authType: String?) {}
+                override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> = arrayOf()
+            })
+            val sslContext = javax.net.ssl.SSLContext.getInstance("SSL")
+            sslContext.init(null, trustAllCerts, java.security.SecureRandom())
+            return OkHttpClient.Builder()
+                .sslSocketFactory(sslContext.socketFactory, trustAllCerts[0] as javax.net.ssl.X509TrustManager)
+                .hostnameVerifier { _, _ -> true }
+                .build()
+        } catch (e: Exception) {
+            throw RuntimeException(e)
         }
     }
 
