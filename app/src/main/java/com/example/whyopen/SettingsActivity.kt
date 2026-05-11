@@ -113,8 +113,8 @@ class SettingsActivity : ComponentActivity() {
         val token = "1f9bf740-006b-4e5c-9bac-d52b05ce0d61"
         
         return try {
-            // Explicitly targeting the 'main' index for the test event
-            val jsonPayload = "{\"index\": \"main\", \"event\": \"App Test Connection\"}"
+            // Standard JSON format for Splunk
+            val jsonPayload = "{\"sourcetype\": \"whyopen\", \"event\": \"App Connection Test - SUCCESS\"}"
             val body = jsonPayload.toRequestBody("application/json".toMediaType())
             
             val request = Request.Builder()
