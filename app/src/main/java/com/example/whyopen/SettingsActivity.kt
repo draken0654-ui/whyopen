@@ -25,8 +25,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 
 class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -108,15 +110,24 @@ class SettingsActivity : ComponentActivity() {
     private suspend fun testConnection(): String {
         // We need to use the same logic as the worker
         val client = createUnsafeOkHttpClient()
-        val url = "https://172.16.60.130:8088/services/collector/health"
+        val url = "https://172.16.60.130:8088/services/collector/event"
+        val token = "1f9bf740-006b-4e5c-9bac-d52b05ce0d61"
         
         return try {
-            val request = Request.Builder().url(url).build()
+            val jsonPayload = """{"event": "Manual connection test from WhyOpen app at ${java.util.Date()}"}"""
+            val body = jsonPayload.toRequestBody("application/json".toMediaType())
+            
+            val request = Request.Builder()
+                .url(url)
+                .header("Authorization", "Splunk $token")
+                .post(body)
+                .build()
+                
             client.newCall(request).execute().use { response ->
                 if (response.isSuccessful) {
-                    "Success! Splunk is reachable."
+                    "Success! Test event sent to Splunk."
                 } else {
-                    "Failed: Server returned ${response.code}"
+                    "Failed: ${response.code} - ${response.message}"
                 }
             }
         } catch (e: Exception) {

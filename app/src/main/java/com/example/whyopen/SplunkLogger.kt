@@ -12,9 +12,10 @@ object SplunkLogger {
     fun log(context: Context, tag: String, message: String) {
         val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
         val deviceInfo = "${Build.MANUFACTURER} ${Build.MODEL} (API ${Build.VERSION.SDK_INT})"
-
+        
         // create the log time
         val logEntry = "[$timestamp] [$deviceInfo] [$tag]: $message\n"
+        println("WhyOpen Log: $logEntry")
 
         try {
             // Internal storage file /data/user/0/com.example.why/files/logs_pending.txt
