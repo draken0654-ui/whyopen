@@ -54,12 +54,20 @@ class LogUploadWorker(appContext: Context, workerParams: WorkerParameters) :
 
         return try {
             // 5. Read all logs from the file
-            val logData = logFile.readText()
+            val lines = logFile.readLines()
+            if (lines.isEmpty()) return Result.success()
 
-            // 6. Create the JSON payload for Splunk
-            // Note: We escape double quotes to avoid breaking the JSON format
-            val escapedLogs = logData.replace("\"", "\\\"").replace("\n", "\\n")
-            val jsonPayload = """{"event": "$escapedLogs"}"""
+            // 6. Splunk HEC can accept multiple events in one request 
+            // if they are just concatenated JSON objects.
+            val sb = StringBuilder()
+            for (line in lines) {
+                if (line.isBlank()) continue
+                val escapedLine = line.replace("\"", "\\\"")
+                sb.append("{\"event\": \"$escapedLine\"}\n")
+            }
+            
+            val jsonPayload = sb.toString()
+            if (jsonPayload.isBlank()) return Result.success()
 
             val body = jsonPayload.toRequestBody("application/json".toMediaType())
 
