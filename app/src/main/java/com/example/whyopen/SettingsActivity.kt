@@ -119,6 +119,7 @@ class SettingsActivity : ComponentActivity() {
             val request = Request.Builder()
                 .url(url)
                 .header("Authorization", "Splunk $token")
+                .header("X-Splunk-Request-Channel", java.util.UUID.randomUUID().toString())
                 .post(body)
                 .build()
                 

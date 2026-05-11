@@ -71,10 +71,11 @@ class LogUploadWorker(appContext: Context, workerParams: WorkerParameters) :
 
             val body = jsonPayload.toRequestBody("application/json".toMediaType())
 
-            // 7. Build the Request with the Security Token
+            // 7. Build the Request with the Security Token and Channel ID
             val request = Request.Builder()
                 .url(splunkUrl)
                 .header("Authorization", "Splunk $splunkToken")
+                .header("X-Splunk-Request-Channel", java.util.UUID.randomUUID().toString())
                 .post(body)
                 .build()
 
