@@ -9,17 +9,37 @@ import androidx.core.app.NotificationCompat
 object FocusTimerManager {
     private const val CHANNEL_ID = "focus_timer_channel"
 
-    fun showTimeExpiredNotification(context: Context, packageName: String) {
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
+    fun getOrCreateChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 "Focus Timer",
-                NotificationManager.IMPORTANCE_HIGH
+                NotificationManager.IMPORTANCE_LOW // Low for constant monitoring
             )
             notificationManager.createNotificationChannel(channel)
         }
+    }
+
+    fun buildMonitoringNotification(context: Context, packageName: String): android.app.Notification {
+        getOrCreateChannel(context)
+        val appName = try {
+            val pm = context.packageManager
+            pm.getApplicationLabel(pm.getApplicationInfo(packageName, 0)).toString()
+        } catch (e: Exception) { packageName }
+
+        return NotificationCompat.Builder(context, CHANNEL_ID)
+            .setContentTitle("Focusing on $appName")
+            .setContentText("Your session is being timed. Stay intentional!")
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setOngoing(true)
+            .build()
+    }
+
+    fun showTimeExpiredNotification(context: Context, packageName: String) {
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        getOrCreateChannel(context)
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setContentTitle("Time's Up!")
@@ -29,6 +49,6 @@ object FocusTimerManager {
             .setAutoCancel(true)
             .build()
 
-        notificationManager.notify(1, notification)
+        notificationManager.notify(2, notification)
     }
 }

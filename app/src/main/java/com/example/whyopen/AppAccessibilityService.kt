@@ -40,6 +40,12 @@ class AppAccessibilityService : AccessibilityService() {
             if (packageName.contains("launcher") || packageName.contains("home") || packageName.contains("trebuchet")) {
                 settingsManager.clearAllSessions()
                 lastTriggeredPackage = null
+                
+                // Stop background monitoring when returning home
+                val stopIntent = Intent(this, OverlayService::class.java).apply {
+                    action = OverlayService.ACTION_STOP_MONITORING
+                }
+                startService(stopIntent)
                 return
             }
 

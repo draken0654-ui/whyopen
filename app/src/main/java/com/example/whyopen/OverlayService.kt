@@ -2,9 +2,13 @@ package com.example.whyopen
 
 import android.app.Service
 import android.content.Intent
+import android.app.NotificationManager
+import android.content.Context
 import android.graphics.PixelFormat
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 import android.view.Gravity
 import android.view.KeyEvent
@@ -36,9 +40,13 @@ class OverlayService : Service() {
     private lateinit var windowManager: WindowManager
     private var composeView: ComposeView? = null
     private lateinit var settingsManager: SettingsManager
+    private val handler = Handler(Looper.getMainLooper())
+    private var monitoringRunnable: Runnable? = null
 
     companion object {
         var isOverlayShowing = false
+        const val ACTION_START_MONITORING = "com.example.whyopen.START_MONITORING"
+        const val ACTION_STOP_MONITORING = "com.example.whyopen.STOP_MONITORING"
     }
 
     override fun onCreate() {
@@ -48,8 +56,21 @@ class OverlayService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_STOP_MONITORING) {
+            stopMonitoring()
+            return START_NOT_STICKY
+        }
+
         val packageName = intent?.getStringExtra("PACKAGE_NAME") ?: return START_NOT_STICKY
         
+        if (intent.action == ACTION_START_MONITORING) {
+            val durationMins = intent.getIntExtra("DURATION_MINS", 0)
+            if (durationMins > 0) {
+                startMonitoring(packageName, durationMins)
+            }
+            return START_STICKY
+        }
+
         // Safety check: Don't stack multiple overlays
         if (isOverlayShowing) {
              Log.d("WhyOpen", "Overlay already active, skipping start")
@@ -58,6 +79,37 @@ class OverlayService : Service() {
 
         showOverlay(packageName)
         return START_NOT_STICKY
+    }
+
+    private fun startMonitoring(packageName: String, minutes: Int) {
+        Log.d("WhyOpen", "Starting background monitoring for $packageName ($minutes mins)")
+        
+        stopMonitoring() // Clear any existing
+
+        // Optionally start foreground to ensure it stays alive
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notification = FocusTimerManager.buildMonitoringNotification(this, packageName)
+            startForeground(1, notification)
+        }
+
+        monitoringRunnable = Runnable {
+            Log.d("WhyOpen", "Session expired for $packageName. Closing app.")
+            FocusTimerManager.showTimeExpiredNotification(this, packageName)
+            goHome()
+        }
+        
+        handler.postDelayed(monitoringRunnable!!, minutes.toLong() * 60 * 1000)
+    }
+
+    private fun stopMonitoring() {
+        monitoringRunnable?.let { handler.removeCallbacks(it) }
+        monitoringRunnable = null
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } else {
+            @Suppress("DEPRECATION")
+            stopForeground(true)
+        }
     }
 
     private fun showOverlay(packageName: String) {
@@ -121,8 +173,17 @@ class OverlayService : Service() {
                         onUnlocked = { duration ->
                             settingsManager.setSessionExpiry(packageName, duration)
                             settingsManager.resetWrongAnswers(packageName)
+                            
+                            // Trigger monitoring
+                            val monitorIntent = Intent(this@OverlayService, OverlayService::class.java).apply {
+                                action = ACTION_START_MONITORING
+                                putExtra("PACKAGE_NAME", packageName)
+                                putExtra("DURATION_MINS", duration)
+                            }
+                            startService(monitorIntent)
+                            
                             removeOverlay()
-                            stopSelf()
+                            // Don't stopSelf() yet as we need to monitor
                         },
                         onPenaltyTriggered = { minutes ->
                             settingsManager.setPenalty(packageName, minutes)
@@ -164,6 +225,7 @@ class OverlayService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        stopMonitoring()
         removeOverlay()
     }
 
