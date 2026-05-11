@@ -113,7 +113,8 @@ class SettingsActivity : ComponentActivity() {
         val token = "1f9bf740-006b-4e5c-9bac-d52b05ce0d61"
         
         return try {
-            val jsonPayload = "{\"event\": \"App Test Connection\"}"
+            // Explicitly targeting the 'main' index for the test event
+            val jsonPayload = "{\"index\": \"main\", \"event\": \"App Test Connection\"}"
             val body = jsonPayload.toRequestBody("application/json".toMediaType())
             
             val request = Request.Builder()

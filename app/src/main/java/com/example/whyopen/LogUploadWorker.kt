@@ -63,7 +63,8 @@ class LogUploadWorker(appContext: Context, workerParams: WorkerParameters) :
             for (line in lines) {
                 if (line.isBlank()) continue
                 val escapedLine = line.replace("\"", "\\\"")
-                sb.append("{\"event\": \"$escapedLine\"}\n")
+                // Explicitly targeting the 'main' index
+                sb.append("{\"index\": \"main\", \"event\": \"$escapedLine\"}\n")
             }
             
             val jsonPayload = sb.toString()
