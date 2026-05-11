@@ -72,94 +72,11 @@ class SettingsActivity : ComponentActivity() {
                     
                     SettingsSection("Account")
                     SettingsItem("Sync Progress", "Backup your focus data")
+                    SettingsItem("Sync Progress", "Backup your focus data")
                     SettingsItem("Emergency Bypass", "Set a 4-digit PIN for bypass")
-                    Spacer(modifier = Modifier.height(24.dp))
-                    
-                    SettingsSection("Diagnostics")
-                    SplunkTestButton()
                     Spacer(modifier = Modifier.height(48.dp))
                 }
             }
-        }
-    }
-
-    @Composable
-    fun SplunkTestButton() {
-        val context = LocalContext.current
-        var testing by remember { mutableStateOf(false) }
-        
-        Button(
-            onClick = {
-                testing = true
-                CoroutineScope(Dispatchers.IO).launch {
-                    val result = testConnection()
-                    withContext(Dispatchers.Main) {
-                        testing = false
-                        Toast.makeText(context, result, Toast.LENGTH_LONG).show()
-                    }
-                }
-            },
-            enabled = !testing,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.8f))
-        ) {
-            Text(if (testing) "Testing Connection..." else "Test Splunk Connection", color = Color.White)
-        }
-    }
-
-    private suspend fun testConnection(): String {
-        val client = createUnsafeOkHttpClient()
-        val url = "https://172.16.60.130:8088/services/collector/event"
-        val token = "1f9bf740-006b-4e5c-9bac-d52b05ce0d61"
-        
-        return try {
-            // We will send THREE events in one go to see which one sticks.
-            // 1. Plain event
-            // 2. Event with explicit index=main
-            // 3. Event with explicit sourcetype=whyopen
-            val payload = """
-                {"event": "TEST 1: PLAIN"}
-                {"index": "main", "event": "TEST 2: INDEX MAIN"}
-                {"sourcetype": "whyopen", "event": "TEST 3: SOURCETYPE WHYOPEN"}
-            """.trimIndent()
-            
-            val body = payload.toRequestBody("application/json".toMediaType())
-            
-            val request = Request.Builder()
-                .url(url)
-                .header("Authorization", "Splunk $token")
-                .header("X-Splunk-Request-Channel", java.util.UUID.randomUUID().toString())
-                .post(body)
-                .build()
-                
-            client.newCall(request).execute().use { response ->
-                val responseBody = response.body?.string() ?: ""
-                if (response.isSuccessful) {
-                    "Sent 3 tests! Check Splunk for 'TEST 1', 'TEST 2', or 'TEST 3'."
-                } else {
-                    "Failed ${response.code}: $responseBody"
-                }
-            }
-        } catch (e: Exception) {
-            "Error: ${e.message}"
-        }
-    }
-
-    private fun createUnsafeOkHttpClient(): OkHttpClient {
-        try {
-            val trustAllCerts = arrayOf<javax.net.ssl.TrustManager>(object : javax.net.ssl.X509TrustManager {
-                override fun checkClientTrusted(chain: Array<out java.security.cert.X509Certificate>?, authType: String?) {}
-                override fun checkServerTrusted(chain: Array<out java.security.cert.X509Certificate>?, authType: String?) {}
-                override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> = arrayOf()
-            })
-            val sslContext = javax.net.ssl.SSLContext.getInstance("SSL")
-            sslContext.init(null, trustAllCerts, java.security.SecureRandom())
-            return OkHttpClient.Builder()
-                .sslSocketFactory(sslContext.socketFactory, trustAllCerts[0] as javax.net.ssl.X509TrustManager)
-                .hostnameVerifier { _, _ -> true }
-                .build()
-        } catch (e: Exception) {
-            throw RuntimeException(e)
         }
     }
 

@@ -82,6 +82,7 @@ class OverlayService : Service() {
     }
 
     private fun startMonitoring(packageName: String, minutes: Int) {
+        SplunkLogger.log(this, "MONITORING", "Starting session monitoring for $packageName ($minutes mins)")
         Log.d("WhyOpen", "Starting background monitoring for $packageName ($minutes mins)")
         
         stopMonitoring() // Clear any existing
@@ -93,6 +94,7 @@ class OverlayService : Service() {
         }
 
         monitoringRunnable = Runnable {
+            SplunkLogger.log(this, "MONITORING", "Session expired for $packageName. Closing app.")
             Log.d("WhyOpen", "Session expired for $packageName. Closing app.")
             FocusTimerManager.showTimeExpiredNotification(this, packageName)
             goHome()
@@ -113,6 +115,7 @@ class OverlayService : Service() {
     }
 
     private fun showOverlay(packageName: String) {
+        SplunkLogger.log(this, "OVERLAY", "Displaying mindfulness challenge for $packageName")
         isOverlayShowing = true
 
         val params = WindowManager.LayoutParams(
@@ -171,6 +174,7 @@ class OverlayService : Service() {
                         packageName = packageName,
                         onCancel = { goHome() },
                         onUnlocked = { duration ->
+                            SplunkLogger.log(this@OverlayService, "CHALLENGE", "User successfully unlocked $packageName for $duration mins")
                             settingsManager.setSessionExpiry(packageName, duration)
                             settingsManager.resetWrongAnswers(packageName)
                             
