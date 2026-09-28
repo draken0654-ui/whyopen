@@ -1,4 +1,4 @@
-package com.example.whyopen
+package com.example.whyopen.storage
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -8,7 +8,7 @@ import java.util.*
 data class DayStats(
     val dayLabel: String, // e.g., Mon
     val dateLabel: String, // e.g., 12/05
-    val fullDate: String, // e.g., Monday, May 12
+    val fullDate: String, // e.g., Tuesday, May 12
     val intensity: Float, // 0f to 1f
     val focusScore: Int
 )

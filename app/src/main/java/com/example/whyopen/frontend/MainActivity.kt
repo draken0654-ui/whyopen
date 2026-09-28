@@ -1,4 +1,4 @@
-package com.example.whyopen
+package com.example.whyopen.frontend
 
 import android.accessibilityservice.AccessibilityService
 import android.app.AppOpsManager
@@ -28,6 +28,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.whyopen.backend.AppAccessibilityService
+import com.example.whyopen.storage.SettingsManager
 import com.example.whyopen.ui.theme.WhyopenTheme
 
 class MainActivity : ComponentActivity() {

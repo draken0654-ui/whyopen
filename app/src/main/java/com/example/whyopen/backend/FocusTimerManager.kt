@@ -1,4 +1,4 @@
-package com.example.whyopen
+package com.example.whyopen.backend
 
 import android.app.NotificationChannel
 import android.app.NotificationManager

@@ -1,4 +1,4 @@
-package com.example.whyopen
+package com.example.whyopen.frontend
 
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
+import com.example.whyopen.storage.SettingsManager
 import com.example.whyopen.ui.theme.WhyopenTheme
 
 data class AppItem(

@@ -1,4 +1,4 @@
-package com.example.whyopen
+package com.example.whyopen.frontend
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -13,7 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,7 +59,6 @@ class SettingsActivity : ComponentActivity() {
                     Spacer(modifier = Modifier.height(24.dp))
                     
                     SettingsSection("Account")
-                    SettingsItem("Sync Progress", "Backup your focus data")
                     SettingsItem("Sync Progress", "Backup your focus data")
                     SettingsItem("Emergency Bypass", "Set a 4-digit PIN for bypass")
                     Spacer(modifier = Modifier.height(48.dp))

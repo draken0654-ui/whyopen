@@ -1,4 +1,4 @@
-package com.example.whyopen
+package com.example.whyopen.backend
 
 import kotlin.random.Random
 

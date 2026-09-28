@@ -1,9 +1,7 @@
-package com.example.whyopen
+package com.example.whyopen.backend
 
 import android.app.Service
 import android.content.Intent
-import android.app.NotificationManager
-import android.content.Context
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.Handler
@@ -33,6 +31,7 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
+import com.example.whyopen.storage.SettingsManager
 import kotlinx.coroutines.delay
 
 class OverlayService : Service() {

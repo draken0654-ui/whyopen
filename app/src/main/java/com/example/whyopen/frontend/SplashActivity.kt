@@ -1,4 +1,4 @@
-package com.example.whyopen
+package com.example.whyopen.frontend
 
 import android.annotation.SuppressLint
 import android.content.Intent

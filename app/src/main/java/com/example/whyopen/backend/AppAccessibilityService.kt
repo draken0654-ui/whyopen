@@ -1,9 +1,10 @@
-package com.example.whyopen
+package com.example.whyopen.backend
 
 import android.accessibilityservice.AccessibilityService
 import android.content.Intent
-import android.view.accessibility.AccessibilityEvent
 import android.util.Log
+import android.view.accessibility.AccessibilityEvent
+import com.example.whyopen.storage.SettingsManager
 
 class AppAccessibilityService : AccessibilityService() {
 
