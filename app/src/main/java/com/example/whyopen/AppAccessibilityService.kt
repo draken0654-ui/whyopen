@@ -38,7 +38,6 @@ class AppAccessibilityService : AccessibilityService() {
             
             // 3. Detect Home/Launcher to reset state
             if (packageName.contains("launcher") || packageName.contains("home") || packageName.contains("trebuchet")) {
-                SplunkLogger.log(this, "SYSTEM", "User returned to Home screen")
                 settingsManager.clearAllSessions()
                 lastTriggeredPackage = null
                 
